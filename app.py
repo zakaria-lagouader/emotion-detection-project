@@ -1,13 +1,10 @@
 import os
 import cv2
 import time
-import numpy as np
 import streamlit as st
 from functions import recognize_emotions
 
-def main():
-    st.title("Video File Path")
-
+def video_processing():
     # Button to choose a video file
     video_file = st.file_uploader("Choose a video file", type=["mp4", "avi"])
 
@@ -49,6 +46,47 @@ def main():
             frame_placeholder.image(frame, channels="BGR")
 
             plot_placeholder.bar_chart(score_history)
+
+def camera_processing():
+    # OpenCV VideoCapture
+    cap = cv2.VideoCapture(0)
+
+    score_history = []
+
+    # Placeholder for displaying the video
+    frame_placeholder = st.empty()
+
+    # Stop button
+    stop_button = st.button("Stop")
+
+    # Placeholder for displaying the bar chart
+    plot_placeholder = st.empty()
+
+    # display the video in streamlit
+    while cap.isOpened() and not stop_button:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Perform emotion recognition on the frame
+        frame, score = recognize_emotions(frame)
+
+        score_history.append(score)
+
+        # Display the frame in streamlit
+        frame_placeholder.image(frame, channels="BGR")
+
+        plot_placeholder.bar_chart(score_history)
+
+def main():
+    st.title("Emotion Recognition Demo")
+
+    option = st.selectbox('Video or Camera ?', ('Video', 'Camera'))
+
+    if option == 'Video':
+        video_processing()
+    elif option == 'Camera':
+        camera_processing()
 
 
 
