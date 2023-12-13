@@ -1,0 +1,5 @@
+# Ignore the contents of the "upload" folder
+/upload/*
+
+# Ignore the "__pycache__" folder
+__pycache__/
