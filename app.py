@@ -1,6 +1,7 @@
 import os
 import cv2
 import time
+import numpy as np
 import streamlit as st
 from functions import recognize_emotions
 
@@ -10,7 +11,6 @@ def main():
     # Button to choose a video file
     video_file = st.file_uploader("Choose a video file", type=["mp4", "avi"])
 
-    # Display the path of the chosen video file
     if video_file is not None:
 
         timestamp = int(time.time())
@@ -23,11 +23,16 @@ def main():
         # OpenCV VideoCapture
         cap = cv2.VideoCapture(uploaded_video_path)
 
+        score_history = []
+
         # Placeholder for displaying the video
         frame_placeholder = st.empty()
 
         # Stop button
         stop_button = st.button("Stop")
+
+        # Placeholder for displaying the bar chart
+        plot_placeholder = st.empty()
 
         # display the video in streamlit
         while cap.isOpened() and not stop_button:
@@ -36,10 +41,14 @@ def main():
                 break
 
             # Perform emotion recognition on the frame
-            frame = recognize_emotions(frame)
+            frame, score = recognize_emotions(frame)
+
+            score_history.append(score)
 
             # Display the frame in streamlit
             frame_placeholder.image(frame, channels="BGR")
+
+            plot_placeholder.bar_chart(score_history)
 
 
 

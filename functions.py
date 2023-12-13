@@ -6,6 +6,7 @@ from keras.models import model_from_json
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 emotions = ["Angry", "Disgusted", "Fearful", "Happy", "Neutral", "Sad", "Surprised"]
+scores = [-1, -0.1, -0.1, 1, 0.1, -0.2, 0.1]
 
 def load_model():
     with open('model/emotion_model.json', 'r') as f:
@@ -21,7 +22,7 @@ def detect_faces(frame):
 
     return [(x, y, w, h) for (x, y, w, h) in faces]
 
-def detect_emotion(frame, face):
+def detect_emotion_and_score(frame, face):
     (x, y, w, h) = face
     gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     cropped_face = gray_img[y:y + h, x:x + w]
@@ -33,18 +34,20 @@ def detect_emotion(frame, face):
     prediction = model.predict(cropped_face)
     maxindex = int(np.argmax(prediction))
 
-    return emotions[maxindex]
+    return emotions[maxindex], scores[maxindex]
 
 def recognize_emotions(frame):
     faces = detect_faces(frame)
+    total_score = 0
 
     for face in faces:
         # Perform emotion recognition on each face
-        emotion = detect_emotion(frame, face)
+        emotion, score = detect_emotion_and_score(frame, face)
+        total_score += score
 
         # Draw a rectangle around the face and display the emotion label
         (x, y, w, h) = face
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
         cv2.putText(frame, emotion, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2, cv2.LINE_AA)
 
-    return frame
+    return frame, total_score
