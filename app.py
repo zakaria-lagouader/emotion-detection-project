@@ -2,7 +2,9 @@ import os
 import cv2
 import time
 import streamlit as st
-from functions import recognize_emotions
+import pandas as pd
+from functions import recognize_emotions, plot_faces
+
 
 def video_processing():
     # Button to choose a video file
@@ -20,7 +22,7 @@ def video_processing():
         # OpenCV VideoCapture
         cap = cv2.VideoCapture(uploaded_video_path)
 
-        score_history = []
+        history = []
 
         # Placeholder for displaying the video
         frame_placeholder = st.empty()
@@ -31,6 +33,9 @@ def video_processing():
         # Placeholder for displaying the bar chart
         plot_placeholder = st.empty()
 
+        # Placeholder for displaying the faces
+        # faces_placeholder = st.empty()
+
         # display the video in streamlit
         while cap.isOpened() and not stop_button:
             ret, frame = cap.read()
@@ -38,14 +43,17 @@ def video_processing():
                 break
 
             # Perform emotion recognition on the frame
-            frame, score = recognize_emotions(frame)
+            frame, record, faces = recognize_emotions(frame)
 
-            score_history.append(score)
+            history.append(record)
 
             # Display the frame in streamlit
             frame_placeholder.image(frame, channels="BGR")
 
-            plot_placeholder.bar_chart(score_history)
+            plot_placeholder.bar_chart(pd.DataFrame.from_dict(history))
+
+            # Display the faces in streamlit
+            # faces_placeholder.image(plot_faces(frame, faces))
 
 def camera_processing():
     # OpenCV VideoCapture
