@@ -3,7 +3,7 @@ import cv2
 import time
 import streamlit as st
 import pandas as pd
-from functions import recognize_emotions, plot_faces
+from functions import recognize_emotions, calculate_feedback
 
 
 def video_processing():
@@ -34,7 +34,7 @@ def video_processing():
         plot_placeholder = st.empty()
 
         # Placeholder for displaying the faces
-        # faces_placeholder = st.empty()
+        feedback_placeholder = st.empty()
 
         # display the video in streamlit
         while cap.isOpened() and not stop_button:
@@ -43,7 +43,7 @@ def video_processing():
                 break
 
             # Perform emotion recognition on the frame
-            frame, record, faces = recognize_emotions(frame)
+            frame, record = recognize_emotions(frame)
 
             history.append(record)
 
@@ -52,8 +52,12 @@ def video_processing():
 
             plot_placeholder.bar_chart(pd.DataFrame.from_dict(history))
 
-            # Display the faces in streamlit
-            # faces_placeholder.image(plot_faces(frame, faces))
+            # Calculate the feedback
+            feedback = calculate_feedback(record)
+            if feedback == "Positive":
+                feedback_placeholder.success(f"Feedback : {feedback}", icon="✅")
+            else:
+                feedback_placeholder.error(f"Feedback : {feedback}", icon="❌")
 
 def camera_processing():
     # OpenCV VideoCapture
