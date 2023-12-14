@@ -14,22 +14,18 @@ def load_model():
         model.load_weights('model/emotion_model.h5')
         return model
 
-def detect_faces(frame):
-    # Convert the frame to grayscale
-    gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+model = load_model()
 
-    faces = face_cascade.detectMultiScale(gray_img, scaleFactor=1.1, minNeighbors=5, minSize=(25, 25))
+def detect_faces(frame):
+    faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=5, minSize=(25, 25))
 
     return [(x, y, w, h) for (x, y, w, h) in faces]
 
 def detect_emotion_and_score(frame, face):
     (x, y, w, h) = face
-    gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cropped_face = gray_img[y:y + h, x:x + w]
+    cropped_face = frame[y:y + h, x:x + w]
     cropped_face = np.expand_dims(np.expand_dims(cv2.resize(cropped_face, (48, 48)), -1), 0)
     
-    model = load_model()
-
     # predict the emotions
     prediction = model.predict(cropped_face)
     maxindex = int(np.argmax(prediction))
@@ -37,13 +33,14 @@ def detect_emotion_and_score(frame, face):
     return emotions[maxindex]
 
 def recognize_emotions(frame):
-    faces = detect_faces(frame)
+    gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = detect_faces(gray_img)
     emotions_count = {"Angry": 0, "Disgusted": 0, "Fearful": 0, "Happy": 0, "Neutral": 0, "Sad": 0, "Surprised": 0}
     emotions_faces = {"Angry": [], "Disgusted": [], "Fearful": [], "Happy": [], "Neutral": [], "Sad": [], "Surprised": []}
 
     for face in faces:
         # Perform emotion recognition on each face
-        emotion = detect_emotion_and_score(frame, face)
+        emotion = detect_emotion_and_score(gray_img, face)
         emotions_count[emotion] += 1
         emotions_faces[emotion].append(face)
 
